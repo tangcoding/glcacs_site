@@ -1,0 +1,30 @@
+        elif data_set == 'abs_data':
+            if users.is_current_user_admin():
+                db_data = db.Query(Abs_db, projection=('user_id', 'data_id', 'email', 'name'))
+
+                data = []
+                for f in db_data:
+                    data.append(db.to_dict(f))
+                print data
+
+                self.response.headers['Content-Type'] = 'application/json'
+                self.response.out.write(json.dumps(data))
+
+            elif users.get_current_user():
+                user_id = users.get_current_user().user_id()
+                db_data =db.Query(Abs_db, projection=('data_id', 'email', 'name')).filter('user_id = ', user_id)
+
+                data = []
+                for result in db_data:
+                    data.append({'user_id': user_id, 'data_id': result.data_id, 'email': result.email,  'name': result.name})
+                print data
+
+    @classmethod
+    def _get_all_photo(self):
+        q  = ndb.gql("SELECT data_id,catagory FROM Photo_db")
+        db_data   =[]
+        for result in q:
+            # print 'lala:',result.data_id, result.catagory
+            db_data.append({'data_id':result.data_id, 'catagory': result.catagory}) 
+        # print db_data    
+        return json.dumps(db_data)

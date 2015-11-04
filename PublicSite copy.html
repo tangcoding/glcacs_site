@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+
+<html lang="en" ng-app="app" ng-controller="pub_ctrl">
+<head>
+  <title>GLCACS-{{page_name}}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/files/bootstrap/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script src="/files/bootstrap/js/bootstrap.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
+
+  <!--style-->
+  <style type="text/css">
+    html, body{ padding: 0; margin: 0; font-size: 1em; text-align: center; font-family: serif;
+}
+    h2 {font-size: 1.1rem; }
+    h3{ color: #0097A7; padding: 5px 15px; border-bottom: 1px solid #0097A7; border-radius: 3px; font-size: 1rem; box-shadow: 0px 2px 2px -2px #ccc;}
+
+    .top_navbar{display: none;}
+    .container-fluid{max-width: 900px; margin: 0 auto; text-align: center;}
+    .manage_nav li {display: inline-block;}
+
+    .carousel-caption p{font-size: 0.6rem; color: #E0F7FA;text-shadow: 1px 1px 6px #000; background: rgba(0,0,0,0.2);}
+
+    .main_container{ width: 100%; max-width: 900px; margin: 0 auto; padding: 15px 35px;  color: #424242; text-align: left;}
+    .event, .other{ margin: 25px auto; width: 100%; }
+    .login_wrap{width:100%; margin:25px auto; padding-right: 10%; color: #aaa; text-align: right;}
+    .alert{margin: 20px auto; text-align: center;}
+
+    form {text-align: left; width: 100%; padding:25px; background:#E0F7FA; margin: 25px auto; border-radius: 5px;}
+    label {font-size: 16px; font-weight: 400;}
+    select {font-size:14px; padding:3px; height: 25px; line-height: 14px; border: 1px solid #ccc;}
+
+    .data_table {width: 100%; margin: 25px auto;}
+    .data_table tr {border-radius: 5px; background: #E0F7FA; }
+    .data_table td {padding:5px; text-align:center; height: auto; border: 1px solid #555; word-wrap: break-word;}
+    .data_table tr:first-child {background: #00ACC1; color: #fff;}
+    .data_table tr:nth-child(even) {background: #fff;}
+    .data_table .del_mark{color: red;}
+    input[type="file"] {opacity:0; width: 1px; display: inline-block;}
+
+     /*responsive design */
+    @media screen and (min-width: 500px) and (max-width: 900px) {
+      .carousel-caption p{font-size: 0.8rem;}
+    }
+
+    @media screen and (min-width: 900px) {
+
+      h2 {font-size: 1.15rem; color: #fff; font-weight: 550;}
+      .dropdown-menu>li>a {font-size: 16px;}
+      .intro,.event, .other{ width: 30%;  margin: 25px 10px; display: inline-block; vertical-align: top;}
+      form {width: 70%;}
+      .data_table td {max-width:150px;}
+
+      .top_navbar{display: block; }
+      .navbar-brand {display: none;}
+      #public_Navbar {text-align: justify;}
+      .navbar-nav {margin: 0 auto; padding-left: 50px;}
+
+      .carousel-caption p{font-size: 1.1rem;}
+      .main_container{text-align: center;}
+
+      .text_justify {text-align: justify;}
+      .text_left{text-align: left;}
+
+    }
+
+  </style>
+
+ <!-- scripts jquery-->
+  <script>
+    $(document).ready(function(){
+
+      if ($(window).width() < 900){
+        //var append_html = $.parseHTML("{{carousel_lg}}");
+        //console.log(html);
+        //$('.carousel-inner').append($html);
+        $(".main_navbar").addClass("navbar-default");
+        $(".main_navbar").removeClass("navbar-inverse");
+      }
+
+      $(window).on('resize', function() {
+        if($(window).width() > 900) {
+          $(".main_navbar").removeClass("navbar-default");
+          $(".main_navbar").addClass("navbar-inverse");
+        }else{
+          $(".main_navbar").addClass("navbar-default");
+          $(".main_navbar").removeClass("navbar-inverse");
+        }
+      })
+
+
+      $('.glyphicon-collapse-down').click(function(){
+        $('#hidden_text').slideToggle("slow");
+        $(this).toggleClass('glyphicon-collapse-up');
+        ($(".collapse_text").text() === "More") ? $(".collapse_text").text("Less") : $(".collapse_text").text("More");
+        });
+
+      $('input[name=job_info_file]').change(function() {
+        $('#job_file_path').text($(this).val());
+      });
+
+      $('input[name=att1_file]').change(function() {
+        $('#att1_file_path').text($(this).val());
+      });
+
+      $('input[name=att2_file]').change(function() {
+        $('#att2_file_path').text($(this).val());
+      });
+
+      $('input[name=att3_file]').change(function() {
+        $('#att3_file_path').text($(this).val());
+      });
+
+      $('input[name=photo_file]').change(function() {
+        $('#photo_file_path').text($(this).val());
+      });
+
+      $('input[name=icon_file]').change(function() {
+        $('#icon_file_path').text($(this).val());
+      });
+ 
+    });
+  </script>
+
+ <!-- scripts  angular-->
+  <script>
+  var app = angular.module("app", [],
+    function($interpolateProvider) {
+      $interpolateProvider.startSymbol('[!');
+      $interpolateProvider.endSymbol('!]');
+  }); 
+
+  app.controller('pub_ctrl',function($rootScope, $scope, $http, $sce){
+
+  // # conference registration page ctrl
+    {% if page_id == 'conference_registraion' %}
+
+      $scope.success_flag = false; 
+
+
+      $scope.add_reg_data = function(){
+
+        // the data object that will be passed
+        var data_obj = {
+          name: $scope.name,
+          email: $scope.email,
+          affiliation: $scope.affiliation,
+          comments: $scope.comments
+        };
+
+        $http.post('/conference_registraion/add_record', data_obj)
+        .success(function(data, status) {
+
+          $scope.success_flag = true;
+    
+          // clear the form
+          $scope.name = '';
+          $scope.email = '';
+          $scope.affiliation = '';
+          $scope.comments = '';
+
+        });
+      };
+
+    {% endif %}
+
+  // # conference page ctrl
+    {% if page_id == 'conference' %}
+
+      $scope.conf_data = []; 
+
+      $http({ method: 'GET', url: '/manage/load_data?conf_data' })
+      .success(function(data, status) { 
+        $scope.conf_data = data; 
+      });
+
+    {% endif %}  
+
+  // # job page ctrl
+    {% if page_id == 'jobs' %}
+
+      $scope.job_data = []; 
+
+      $http({ method: 'GET', url: '/manage/load_data?job_data' })
+      .success(function(data, status) { 
+        $scope.job_data = data; 
+      });
+
+    {% endif %}
+
+
+ // # activities page ctrl
+    {% if page_id == 'activities' %}
+
+      $scope.icon_data = [];
+
+      $http({ method: 'GET', url: '/manage/load_data?icon_data' })
+      .success(function(data, status) { 
+        $scope.icon_data = data; 
+        console.log($scope.icon_data);
+      });
+
+      // $http({ method: 'GET', url: '/manage/load_data?picnic_icon_data' })
+      // .success(function(data, status) { 
+      //   $scope.picnic_icon_data = data; 
+      // });
+
+    {% endif %}
+
+ // # activity photo page ctrl
+   {% if page_id == 'activity_photos' %}
+
+      $scope.activity_photos = []; 
+    
+      // if (window.innerWidth <= 400){ $scope.img_size = "medium";}
+      // else{$scope.img_size = "large"; }
+
+      $http({ method: 'GET', url: '/manage/load_data?photo_data?{{act_year}}?{{act_class}}' })
+      .success(function(data, status) { 
+        $scope.activity_photos = data; 
+        if($scope.activity_photos.length >= 1)
+          $scope.mainImageUrl = $scope.activity_photos[0].data_id;
+      });
+
+      $scope.setImage = function(item) {
+        $scope.mainImageUrl = item.data_id;
+      };
+
+    {% endif %}
+
+
+  // # contact page ctrl
+    {% if page_id == 'contact' %}
+
+      $scope.success_flag = false; 
+
+
+      $scope.add_comment = function(){
+
+        // the data object that will be passed
+        var data_obj = {
+          name: $scope.name,
+          email: $scope.email,
+          comments: $scope.comments
+        };
+
+        $http.post('/contact/recieve_comment', data_obj)
+        .success(function(data, status) {
+
+          $scope.success_flag = true;
+
+          // clear the form
+          $scope.name = '';
+          $scope.email = '';
+          $scope.comments = '';
+
+        });
+      };
+
+
+    {% endif %}
+
+
+  // # manage registration_data page ctrl
+    {% if page_id == 'registration_data' %}
+      $scope.reg_data = [];
+      $http({ method: 'GET', url: '/manage/load_data?registration_data' })
+      .success(function(data, status) { 
+        $scope.reg_data = data; 
+      });
+
+      $scope.delete = function(data_id) {
+        if (confirm("Delete This Entry?") == true) {
+          $http({ method: 'GET', url: '/delete_data?registration_data?' + data_id})
+            .success(function(data, status) { 
+              $scope.reg_data = data; 
+          });
+        }
+      };
+
+      $scope.delete_all = function() {
+        if (confirm("Delete All Entry?") == true) {
+          $http({ method: 'GET', url: '/delete_data/?registration_data?all'})
+            .success(function(data, status) { 
+              $scope.reg_data = data; 
+          });
+        }
+      };
+      
+    {% endif %}
+
+    {% if page_id == 'job_data' %}
+      $scope.job_data = [];
+      $http({ method: 'GET', url: '/manage/load_data?job_data' })
+      .success(function(data, status) { 
+        $scope.job_data = data; 
+      });
+
+      $scope.delete = function(data_id) {
+        if (confirm("Delete This Entry?") == true) {
+          $http({ method: 'GET', url: '/delete_data?job_data?' + data_id})
+            .success(function(data, status) { 
+              $scope.job_data = data; 
+          });
+        }
+      };
+    {% endif %}
+
+    {% if page_id == 'conference_data' %}
+      $scope.conf_data = [];
+      $http({ method: 'GET', url: '/manage/load_data?conf_data' })
+      .success(function(data, status) { 
+        $scope.conf_data = data; 
+      });
+
+      $scope.delete = function(data_id) {
+        if (confirm("Delete This Entry?") == true) {
+          $http({ method: 'GET', url: '/delete_data?conf_data?' + data_id})
+            .success(function(data, status) { 
+              $scope.conf_data = data; 
+          });
+        }
+      };
+    {% endif %}
+
+    // photo_data page controller
+
+    {% if page_id == 'photo_data' %}
+
+      $scope.photo_data = [];
+      $scope.years = [];
+        var start_year = 2009;
+        var end_year = start_year + 20;
+        for(var i=start_year;i<end_year;i++) {
+          $scope.years.push(i);
+        }
+
+      $scope.select = {
+        year: '2015',
+        photo_class: 'conference'
+      };
+
+
+      $http({ method: 'GET', url: '/manage/load_data?photo_data' })
+      .success(function(data, status) { 
+        $scope.photo_data = data; 
+      });
+
+      $scope.delete = function(data_id) {
+        if (confirm("Delete This Entry?") == true) {
+          $http({ method: 'GET', url: '/delete_data?photo_data?' + data_id})
+            .success(function(data, status) { 
+              $scope.photo_data = data; 
+          });
+        }
+      };
+    {% endif %}
+
+    {% if page_id == 'icon_data' %}
+
+      $scope.icon_data = [];
+
+      $http({ method: 'GET', url: '/manage/load_data?icon_data' })
+      .success(function(data, status) { 
+        $scope.icon_data = data; 
+        //console.log($scope.icon_data);
+      });
+
+      $scope.delete = function(data_id) {
+        if (confirm("Delete This Entry?") == true) {
+          $http({ method: 'GET', url: '/delete_data?icon_data?' + data_id})
+            .success(function(data, status) { 
+              $scope.icon_data = data; 
+          });
+        }
+      };
+    {% endif %}
+
+  });
+
+  </script>
+</head>
+
+
+  <body>
+    {{ nav_object|safe }}
+
+    {% if page_class == 'manage' %}
+      <div class="login_wrap">
+        <a href="{{ login_key }}">{{ gate }}</a>
+        <br>
+        {{ user_name }}
+      </div> 
+    {% endif %}
+    
+    {{ page_html|safe }}
+
+  </body>
+
+
+
+</html>

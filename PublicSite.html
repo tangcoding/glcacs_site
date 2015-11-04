@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+
+<html lang="en" ng-app="app" ng-controller="pub_ctrl">
+<head>
+  <title>GLCACS-{{page_name}}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/files/bootstrap/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script src="/files/bootstrap/js/bootstrap.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
+
+  <!--style-->
+  <style type="text/css">
+    html, body{ padding: 0; margin: 0; font-size: 0.99em; text-align: center; font-family: serif;}
+    h2 {font-size: 1.3rem; color: #fff; font-weight: 520;}
+    h3{ color: #0097A7; padding: 5px 15px; border-bottom: 1px solid #0097A7; border-radius: 3px; font-size: 1rem; box-shadow: 0px 2px 2px -2px #ccc;}
+
+    .top_navbar{display: none;}
+    .main_navbar{box-shadow: 1px 1px 2px 3px #ccc;}
+    .container-fluid{max-width: 900px; margin: 0 auto; text-align: center;}
+    .manage_nav li {display: inline-block;}
+
+    .carousel-caption p{font-size: 0.6rem; color: #E0F7FA;text-shadow: 1px 1px 6px #000; background: rgba(0,0,0,0.2);}
+
+    .main_container{ width: 100%; max-width: 900px; margin: 0 auto; padding: 15px 35px;  color: #424242; text-align: left; }
+    .event, .other{ margin: 25px auto; width: 100%; }
+    .login_wrap{width:100%; margin:25px auto; padding-right: 10%; color: #aaa; text-align: right;}
+    .alert{margin: 20px auto; text-align: center;}
+
+    form {text-align: left; width: 100%; padding:25px; background:#E0F7FA; margin: 25px auto; border-radius: 5px;}
+    label {font-size: 16px; font-weight: 400;}
+    select {font-size:14px; padding:3px; height: 25px; line-height: 14px; border: 1px solid #ccc;}
+
+    .data_table {width: 100%; margin: 25px auto;}
+    .data_table tr {border-radius: 5px; background: #E0F7FA; }
+    .data_table td {padding:5px; text-align:center; height: auto; border: 1px solid #555; word-wrap: break-word;}
+    .data_table tr:first-child {background: #00ACC1; color: #fff;}
+    .data_table tr:nth-child(even) {background: #fff;}
+    .data_table .del_mark{color: red;}
+    input[type="file"] {opacity:0; width: 1px; display: inline-block;}
+
+     /*responsive design */
+    @media screen and (min-width: 500px) and (max-width: 900px) {
+      .carousel-caption p{font-size: 0.8rem;}
+    }
+
+    @media screen and (min-width: 900px) {
+
+      .dropdown-menu>li>a {font-size: 16px;}
+      .intro,.event, .other{ width: 30%;  margin: 25px 10px; display: inline-block; vertical-align: top;}
+      form {width: 70%;}
+      .data_table td {max-width:150px;}
+
+      .top_navbar{display: block; border-bottom: 1px solid #00ACC1; }
+      .navbar-brand {display: none;}
+      #public_Navbar {text-align: center;}
+      #public_Navbar .navbar-nav {margin: 0 auto; float:none; text-align: center;}
+      #public_Navbar .navbar-nav>li {float: none; display: inline-block;}
+
+      .carousel-caption p{font-size: 1.1rem;}
+      .main_container{text-align: center;}
+
+      .text_justify {text-align: justify;}
+      .text_left{text-align: left;}
+
+    }
+
+  </style>
+
+ <!-- scripts jquery-->
+  <script>
+    $(document).ready(function(){
+
+      if ($(window).width() < 900){
+        //var append_html = $.parseHTML("{{carousel_lg}}");
+        //console.log(html);
+        //$('.carousel-inner').append($html);
+        $(".main_navbar").addClass("navbar-default");
+        $(".main_navbar").removeClass("navbar-inverse");
+      }
+
+      $(window).on('resize', function() {
+        if($(window).width() > 900) {
+          $(".main_navbar").removeClass("navbar-default");
+          $(".main_navbar").addClass("navbar-inverse");
+        }else{
+          $(".main_navbar").addClass("navbar-default");
+          $(".main_navbar").removeClass("navbar-inverse");
+        }
+      })
+
+
+      $('.glyphicon-collapse-down').click(function(){
+        $('#hidden_text').slideToggle("slow");
+        $(this).toggleClass('glyphicon-collapse-up');
+        ($(".collapse_text").text() === "More") ? $(".collapse_text").text("Less") : $(".collapse_text").text("More");
+        });
+
+      $('input[name=job_info_file]').change(function() {
+        $('#job_file_path').text($(this).val());
+      });
+
+      $('input[name=att1_file]').change(function() {
+        $('#att1_file_path').text($(this).val());
+      });
+
+      $('input[name=att2_file]').change(function() {
+        $('#att2_file_path').text($(this).val());
+      });
+
+      $('input[name=att3_file]').change(function() {
+        $('#att3_file_path').text($(this).val());
+      });
+
+      $('input[name=photo_file]').change(function() {
+        $('#photo_file_path').text($(this).val());
+      });
+
+      $('input[name=abs_file]').change(function() {
+        $('#abs_file_path').text($(this).val());
+      });
+
+    });
+  </script>
+
+ <!-- scripts  angular-->
+  <script>
+  var app = angular.module("app", [],
+    function($interpolateProvider) {
+      $interpolateProvider.startSymbol('[!');
+      $interpolateProvider.endSymbol('!]');
+  }); 
+
+  app.controller('pub_ctrl',function($rootScope, $scope, $http, $sce){
+
+
+  // # home page ctrl
+    {% if page_id == 'home' %}
+
+      $scope.html_code = ''; 
+
+      $http({ method: 'GET', url: '/manage/get_layout?event' })
+      .success(function(data, status) { 
+        $scope.html_code = $sce.trustAsHtml(data.html_code); 
+        // console.log($scope.html_code);
+      });
+
+    {% endif %}
+
+  // # conference_registration page ctrl
+    {% if page_id == 'conference_registration' %}
+
+      $scope.html_code = ''; 
+
+      $http({ method: 'GET', url: '/manage/get_layout?conference_registration' })
+      .success(function(data, status) { 
+        $scope.html_code = $sce.trustAsHtml(data.html_code); 
+        // console.log($scope.html_code);
+      });
+
+    {% endif %}
+
+  // check conference registration page ctrl
+    {% if page_id == 'check_registration' %}
+
+      $scope.show_flag = false; 
+
+      // angular pass post request to webapp2
+      $scope.find_reg = function(){
+
+        // the data object that will be passed
+        var data_obj = {
+          email: $scope.email,
+          confirmation_num: $scope.confirmation_num
+        };
+
+        // angular pass post request to webapp2
+        $http.post('/conference_registration/find_registration', data_obj)
+        .success(function(data, status) {
+          $scope.show_flag = true;
+          $scope.msg = data.msg;
+          //console.log(data);
+          // clear the form
+          $scope.email = '';
+          $scope.confirmation_num = '';
+        });
+      };
+
+    {% endif %}
+
+  // # conference page ctrl
+    {% if page_id == 'conference' %}
+
+      $scope.conf_data = []; 
+
+      $http({ method: 'GET', url: '/manage/load_data?conf_data' })
+      .success(function(data, status) { 
+        $scope.conf_data = data; 
+      });
+
+    {% endif %}  
+
+  // # job page ctrl
+    {% if page_id == 'jobs' %}
+
+      $scope.job_data = []; 
+
+      $http({ method: 'GET', url: '/manage/load_data?job_data' })
+      .success(function(data, status) { 
+        $scope.job_data = data; 
+      });
+
+    {% endif %}
+
+
+ // # activities page ctrl
+    {% if page_id == 'activities' %}
+
+      $scope.catagory_icon = [];
+
+      $http({ method: 'GET', url: '/manage/load_data?catagory_icon'})
+      .success(function(data, status) { 
+        $scope.catagory_icon = data; 
+        // console.log($scope.catagory_icon);
+      });
+
+    {% endif %}
+
+ // # activity photo page ctrl
+   {% if page_id == 'activity_photos' %}
+
+      $scope.activity_photos = []; 
+    
+      // if (window.innerWidth <= 400){ $scope.img_size = "medium";}
+      // else{$scope.img_size = "large"; }
+      $http({ method: 'GET', url: '/manage/load_data?photo_data?{{catagory}}' })
+      .success(function(data, status) { 
+        $scope.activity_photos = data; 
+        // console.log($scope.activity_photos);
+        if($scope.activity_photos)
+          $scope.mainImageUrl = $scope.activity_photos[0].data_id;
+      });
+
+      $scope.setImage = function(item) {
+        $scope.mainImageUrl = item.data_id;
+      };
+
+    {% endif %}
+
+
+  // # contact page ctrl
+    // {% if page_id == 'contact' %}
+
+    //   $scope.success_flag = false; 
+
+
+    //   $scope.add_comment = function(){
+
+    //     // the data object that will be passed
+    //     var data_obj = {
+    //       name: $scope.name,
+    //       email: $scope.email,
+    //       comments: $scope.comments
+    //     };
+
+    //     $http.post('/contact/recieve_comment', data_obj)
+    //     .success(function(data, status) {
+
+    //       $scope.success_flag = true;
+
+    //       // clear the form
+    //       $scope.name = '';
+    //       $scope.email = '';
+    //       $scope.comments = '';
+
+    //     });
+    //   };
+
+
+    // {% endif %}
+
+
+  // # manage registration_data page ctrl
+    {% if page_id == 'registration_data' %}
+      $scope.reg_data = [];
+      $http({ method: 'GET', url: '/manage/load_data?registration_data' })
+      .success(function(data, status) { 
+        $scope.reg_data = data; 
+      });
+
+      $scope.delete = function(data_id) {
+        if (confirm("Delete This Entry?") == true) {
+          $http({ method: 'GET', url: '/delete_data?registration_data?' + data_id})
+            .success(function(data, status) { 
+              $scope.reg_data = data; 
+          });
+        }
+      };
+
+      $scope.delete_all = function() {
+        if (confirm("Delete All Entry?") == true) {
+          $http({ method: 'GET', url: '/delete_data/?registration_data?all'})
+            .success(function(data, status) { 
+              $scope.reg_data = data; 
+          });
+        }
+      };
+      
+    {% endif %}
+
+  // # manage abstract_data page ctrl
+    {% if page_id == 'abs_data' %}
+      $scope.abs_data = [];
+      $http({ method: 'GET', url: '/manage/load_data?abs_data' })
+      .success(function(data, status) { 
+        $scope.abs_data = data; 
+        // console.log($scope.abs_data)
+      });
+
+      $scope.delete = function(data_id) {
+        if (confirm("Delete This Entry?") == true) {
+          $http({ method: 'GET', url: '/delete_data?abs_data?' + data_id})
+            .success(function(data, status) { 
+              $scope.abs_data = data; 
+          });
+        }
+      };
+    {% endif %}
+
+
+    {% if page_id == 'job_data' %}
+      $scope.job_data = [];
+      $http({ method: 'GET', url: '/manage/load_data?job_data' })
+      .success(function(data, status) { 
+        $scope.job_data = data; 
+      });
+
+      $scope.delete = function(data_id) {
+        if (confirm("Delete This Entry?") == true) {
+          $http({ method: 'GET', url: '/delete_data?job_data?' + data_id})
+            .success(function(data, status) { 
+              $scope.job_data = data; 
+          });
+        }
+      };
+    {% endif %}
+
+  // # manage conference_data page ctrl
+    {% if page_id == 'conference_data' %}
+      $scope.conf_data = [];
+      $http({ method: 'GET', url: '/manage/load_data?conf_data' })
+      .success(function(data, status) { 
+        $scope.conf_data = data; 
+      });
+
+      $scope.delete = function(data_id) {
+        if (confirm("Delete This Entry?") == true) {
+          $http({ method: 'GET', url: '/delete_data?conf_data?' + data_id})
+            .success(function(data, status) { 
+              $scope.conf_data = data; 
+          });
+        }
+      };
+    {% endif %}
+
+  // # manage photo_data page controller
+    {% if page_id == 'photo_data' %}
+
+      $scope.photo_data = [];
+      $scope.catagory_list = [];
+
+      $http({ method: 'GET', url: '/manage/load_data?catagory_data' })
+      .success(function(data, status) { 
+        $scope.catagory_list = data; 
+        if($scope.catagory_list.length >= 1) {
+          $scope.selected = $scope.catagory_list[0].catagory;
+        }
+        //console.log($scope.selected);
+      });
+
+      $http({ method: 'GET', url: '/manage/load_data?photo_data' })
+      .success(function(data, status) { 
+        $scope.photo_data = data; 
+      });
+
+      $scope.delete = function(data_id) {
+        if (confirm("Delete This Entry?") == true) {
+          $http({ method: 'GET', url: '/delete_data?photo_data?' + data_id})
+            .success(function(data, status) { 
+              $scope.photo_data = data; 
+               // console.log($scope.photo_data);
+          });
+        }
+      };
+    {% endif %}
+
+  });
+
+  </script>
+</head>
+
+
+  <body>
+    {{ nav_object|safe }}
+
+    {% if page_class == 'manage' or page_id == 'submit_form' or page_id == 'abs_data' %}
+      <div class="login_wrap">
+        <a href="{{ login_key }}">{{ gate }}</a>
+        <br>
+        {{ user_name }}
+      </div> 
+    {% endif %}
+    
+    {{ page_html|safe }}
+
+
+    {% if page_id == 'modify_event' or page_id == 'modify_registration' %}
+      <style type="text/css" media="screen"> 
+          form {margin: 0 auto; text-align: center; background: #fff; width: 90%;}
+          #editor { width: 100%; height: 70%; min-height:300px; max-height: 500px; margin: 0 25px 25px 25px; text-align: left;}
+          #event_html { width: 70%; height: 1px; opacity: 1; margin: 0 auto;}
+      </style>
+
+       <div class="main_container">
+        {{data_type}}
+        <form action="/manage/save_edit_changes?{{data_type}}" method="post">
+          <textarea id="event_html" name='html_code'>{{text_template}}</textarea>
+          <pre id="editor">
+          </pre>
+
+          <input class="btn btn-default" type="submit" value="Save Changes">
+        </form>
+        
+
+        <script src="/files/ace.js" type="text/javascript" charset="utf-8"></script>
+        <script>
+            var editor = ace.edit("editor");
+            editor.setTheme("ace/theme/dawn");
+            editor.getSession().setMode("ace/mode/html");
+            editor.getSession().setUseWrapMode(true);
+            $('#event_html').hide();
+
+            editor.getSession().setValue($('#event_html').val());
+            // console.log($('#event_html').val());
+            editor.getSession().on('change', function(){
+              $('#event_html').val(editor.getSession().getValue());
+              
+            });
+        </script>
+      </div> <!--.main_container-->
+    {% endif %}
+
+  </body>
+
+
+
+</html>

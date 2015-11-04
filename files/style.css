@@ -1,0 +1,68 @@
+html, body{
+	padding: 0;
+	margin: 0;
+	font-size: 1em;
+	text-align: center;
+
+}
+
+body{
+	max-width: 800px;
+	margin: 0 auto;
+}
+
+
+h3{
+	background: #C5CAE9;
+	padding: 10px;
+	color: #fff;
+	border-radius: 5px;
+}
+
+.main_container{
+	width: 100%;
+	padding: 25px;
+	text-align: justify;
+	color: #424242;
+}
+
+.main_figure{
+	width: 100%;
+	height: 300px;
+	background-size: cover;
+	position: relative;
+}
+
+.main_figure h2{
+	color: white;
+	position: absolute;
+	top: 35px;
+	left: 35px;
+	text-shadow: 2px 2px 3px #aaa;
+}
+
+
+.event, .other{
+	margin: 25px auto;
+	width: 100%;
+}
+
+
+
+
+/*responsive design */
+
+@media screen and (min-width: 700px) {
+
+
+    .event, .other{
+	    width: 40%;
+	    margin: 25px 35px;
+	    display: inline-block;
+	    vertical-align: top;
+    }
+
+    #myCarousel{
+    	content: "{{carousel_lg}}";
+    }
+}
